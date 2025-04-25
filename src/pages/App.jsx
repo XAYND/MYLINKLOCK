@@ -4,7 +4,7 @@ import Verifier from "./Verifier";
 
 function App() {
   return (
-    <Router>
+    <Router basename="/MYLINKLOCK">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/verifier" element={<Verifier />} />
