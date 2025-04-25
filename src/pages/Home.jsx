@@ -21,15 +21,22 @@ function Home() {
 
   const generateLink = () => {
     if (!question || !answer || !redirect) return;
+
     const params = new URLSearchParams({
       question,
       answer,
       redirect,
     });
+
     if (image) {
       params.append('image', image);
     }
-    setGeneratedUrl(`${window.location.origin}/MYLINKLOCK/verifier?${params.toString()}`);
+
+    const basePath = import.meta.env.DEV
+      ? window.location.origin
+      : 'https://xaynd.github.io/MYLINKLOCK';
+
+    setGeneratedUrl(`${basePath}/verifier?${params.toString()}`);
   };
 
   return (
