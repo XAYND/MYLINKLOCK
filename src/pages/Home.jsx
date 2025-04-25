@@ -1,104 +1,110 @@
 import { useState } from 'react';
+import { FaLock, FaKey, FaQuestionCircle, FaLink, FaImage } from 'react-icons/fa';
 
-export default function Home() {
+function Home() {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
-  const [link, setLink] = useState('');
-  const [imageData, setImageData] = useState('');
+  const [redirect, setRedirect] = useState('');
+  const [image, setImage] = useState(null);
   const [generatedUrl, setGeneratedUrl] = useState('');
-  const [copied, setCopied] = useState(false);
 
-  const generateLink = () => {
-    if (!question || !answer || !link) return;
-
-    // Crée un ID unique pour identifier cette énigme
-    const imageId = `img-${Date.now()}`;
-    if (imageData) {
-      localStorage.setItem(imageId, imageData);
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
-
-    const base = window.location.origin + "/verifier";
-    const url = `${base}?question=${encodeURIComponent(question)}&answer=${encodeURIComponent(answer)}&redirect=${encodeURIComponent(link)}&imageId=${imageId}`;
-    setGeneratedUrl(url);
-    setCopied(false);
   };
 
-  const copyToClipboard = async () => {
-    await navigator.clipboard.writeText(generatedUrl);
-    setCopied(true);
+  const generateLink = () => {
+    if (!question || !answer || !redirect) return;
+    const params = new URLSearchParams({
+      question,
+      answer,
+      redirect,
+    });
+    if (image) {
+      params.append('image', image);
+    }
+    setGeneratedUrl(`${window.location.origin}/MYLINKLOCK/verifier?${params.toString()}`);
   };
 
   return (
-    <div className="w-screen h-screen bg-gradient-to-r from-indigo-400 to-purple-500 flex items-center justify-center px-4">
-      <div className="bg-white p-8 rounded-xl shadow-2xl max-w-xl w-full">
-        <h1 className="text-2xl font-bold mb-6 text-gray-800 text-center">🔐 Créer un lien protégé</h1>
+    <div className="min-h-screen bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center p-6">
+      <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-xl">
+        <div className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+          <FaLock /> Créer un lien protégé
+        </div>
 
-        <label className="block mb-2 font-semibold text-gray-700">💬 Énigme ou indice</label>
+        <label className="flex items-center gap-2 font-medium text-gray-700">
+          <FaQuestionCircle /> Énigme ou indice
+        </label>
         <input
           type="text"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4"
           placeholder="Ex: Quel est mon deuxième prénom ?"
-          className="w-full p-2 border rounded-lg mb-4 text-gray-800 bg-white"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
         />
 
-        <label className="block mb-2 font-semibold text-gray-700">🔑 Mot de passe</label>
+        <label className="flex items-center gap-2 font-medium text-gray-700">
+          <FaKey /> Mot de passe
+        </label>
         <input
           type="text"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4"
           placeholder="Ex: Lucas"
-          className="w-full p-2 border rounded-lg mb-4 text-gray-800 bg-white"
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
         />
 
-        <label className="block mb-2 font-semibold text-gray-700">🔗 Lien secret</label>
+        <label className="flex items-center gap-2 font-medium text-gray-700">
+          <FaLink /> Lien secret
+        </label>
         <input
           type="text"
-          placeholder="Ex: https://coflix.mov/film/vaiana-2/"
-          className="w-full p-2 border rounded-lg mb-4 text-gray-800 bg-white"
-          value={link}
-          onChange={(e) => setLink(e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4"
+          placeholder="Ex: https://coflix.mov/film/..."
+          value={redirect}
+          onChange={(e) => setRedirect(e.target.value)}
         />
 
-        <label className="block mb-2 font-semibold text-gray-700">🖼️ Image troll (facultatif)</label>
+        <label className="flex items-center gap-2 font-medium text-gray-700">
+          <FaImage /> Image troll (facultatif)
+        </label>
         <input
           type="file"
           accept="image/*"
-          onChange={(e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (event) => setImageData(event.target.result);
-            reader.readAsDataURL(file);
-          }}
-          className="mb-4"
+          className="w-full mb-4"
+          onChange={handleImageUpload}
         />
 
         <button
           onClick={generateLink}
-          className="w-full p-2 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition"
+          className="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition"
         >
           Générer le lien 🔗
         </button>
 
         {generatedUrl && (
-          <div className="mt-6">
-            <label className="block mb-2 font-semibold text-gray-700">🔓 Lien généré</label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded-lg mb-2 text-gray-800 bg-gray-100"
-              value={generatedUrl}
-              readOnly
-            />
-            <button
-              onClick={copyToClipboard}
-              className="w-full p-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition"
+          <div className="mt-4">
+            <p className="text-sm text-gray-600 mb-1">Lien généré :</p>
+            <a
+              href={generatedUrl}
+              className="text-blue-600 break-all underline"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              {copied ? "Lien copié ! ✅" : "Copier le lien 📋"}
-            </button>
+              {generatedUrl}
+            </a>
           </div>
         )}
       </div>
     </div>
   );
 }
+
+export default Home;
